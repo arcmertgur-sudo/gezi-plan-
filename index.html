@@ -9,6 +9,7 @@
   :root{
     --ink:#0d2b3e; --ink-soft:#3c586b; --paper:#f6f3ec; --paper-2:#ffffff;
     --line:#dcd6c8; --teal:#0f6e6a; --teal-deep:#0a4d4a; --coral:#e8623a; --sand:#efe9da; --radius:2px;
+    --glow:#ffcf5c;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;height:100%;}
@@ -84,17 +85,50 @@
     border:1px solid #cfc8b6; background:#fff;
   }
   .directory-wrap canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+
+  /* Hotspots: glow + anchored name label */
   .hotspot{
-    position:absolute; background:rgba(15,110,106,0); border:2px solid transparent; border-radius:2px;
-    cursor:pointer; padding:0; transition: background 0.12s ease, border-color 0.12s ease; z-index:5;
+    position:absolute; background:rgba(255,205,90,0); border:2px solid transparent; border-radius:3px;
+    cursor:pointer; padding:0; z-index:5;
+    transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
   }
-  .hotspot:hover, .hotspot:focus-visible{ background:rgba(232,98,58,0.28); border-color:var(--coral); outline:none; }
-  .home-tooltip{
-    position:absolute; background:var(--ink); color:#fff; font-size:12.5px; padding:6px 10px;
-    border-radius:3px; pointer-events:none; white-space:nowrap; z-index:40; opacity:0; transform:translateY(4px);
-    transition:opacity 0.1s ease; box-shadow:0 4px 12px rgba(0,0,0,0.3);
+  .hotspot:hover, .hotspot:focus-visible, .hotspot.lit{
+    background:rgba(255,205,90,0.30);
+    border-color: var(--glow);
+    outline:none;
+    animation: glowPulse 1.15s ease-in-out infinite;
   }
-  .home-tooltip.show{ opacity:1; }
+  @keyframes glowPulse{
+    0%,100%{ box-shadow: 0 0 0 2px rgba(255,207,92,0.85), 0 0 14px 5px rgba(255,196,64,0.45); }
+    50%{ box-shadow: 0 0 0 2px rgba(255,207,92,1), 0 0 24px 11px rgba(255,196,64,0.75); }
+  }
+
+  .hotspot-label{
+    position:absolute; background:var(--ink); color:#fbf8f1; font-size:12.5px; font-weight:600;
+    padding:6px 11px; border-radius:3px; white-space:nowrap; z-index:50;
+    opacity:0; transform:scale(0.96); pointer-events:none;
+    transition:opacity 0.14s ease, transform 0.14s ease;
+    box-shadow:0 6px 16px rgba(0,0,0,0.32);
+    border-left:3px solid var(--glow);
+  }
+  .hotspot:hover .hotspot-label, .hotspot:focus-visible .hotspot-label, .hotspot.lit .hotspot-label{
+    opacity:1; transform:scale(1);
+  }
+  .hotspot[data-edge="left"] .hotspot-label{ left:100%; top:50%; transform-origin:left center; translate:0 -50%; margin-left:10px; }
+  .hotspot[data-edge="left"]:hover .hotspot-label,
+  .hotspot[data-edge="left"].lit .hotspot-label{ transform:translateY(-50%) scale(1); }
+  .hotspot[data-edge="left"] .hotspot-label{ transform:translateY(-50%) scale(0.96); }
+
+  .hotspot[data-edge="right"] .hotspot-label{ right:100%; top:50%; margin-right:10px; text-align:right; border-left:none; border-right:3px solid var(--glow); }
+  .hotspot[data-edge="right"] .hotspot-label{ transform:translateY(-50%) scale(0.96); }
+  .hotspot[data-edge="right"]:hover .hotspot-label,
+  .hotspot[data-edge="right"].lit .hotspot-label{ transform:translateY(-50%) scale(1); }
+
+  .hotspot[data-edge="top"] .hotspot-label{ top:100%; left:50%; margin-top:10px; }
+  .hotspot[data-edge="top"] .hotspot-label{ transform:translateX(-50%) scale(0.96); }
+  .hotspot[data-edge="top"]:hover .hotspot-label,
+  .hotspot[data-edge="top"].lit .hotspot-label{ transform:translateX(-50%) scale(1); }
+
   .legend{ display:flex; gap:16px; margin-top:16px; flex-wrap:wrap; justify-content:center; }
   .legend .item{ display:flex; align-items:center; gap:6px; font-size:12px; color:var(--ink-soft); }
   .legend .swatch{ width:13px; height:13px; border-radius:2px; display:inline-block; }
@@ -148,7 +182,7 @@
     .caption-bar{ flex-direction:column; align-items:flex-start; gap:12px; }
     .nav-controls{ align-self:stretch; justify-content:space-between; }
     .brand .sub{ display:none; }
-    .home-tooltip{ display:none; }
+    .hotspot-label{ font-size:11px; padding:5px 8px; }
   }
 </style>
 </head>
@@ -275,48 +309,47 @@
     <div class="home-screen" id="homeScreen">
       <div class="home-head">
         <h1>Blue Zone Kat Planı — Bakan Gezisi Sergi Rotası</h1>
-        <p>Aşağıdaki yerleşim planı üzerinde istediğiniz numaraya tıklayarak o mekânın render görselini açabilirsiniz. Soldaki listeyi de kullanabilirsiniz.</p>
+        <p>Aşağıdaki yerleşim planı üzerinde istediğiniz numaraya dokunun veya fareyle üzerine gelin: numara parlayacak, yanında mekânın adı görünecektir. Tıklayarak o mekânın render görselini açabilirsiniz.</p>
       </div>
       <div class="directory-wrap" id="directoryWrap">
         <canvas id="dirCanvas"></canvas>
-        <button class="hotspot" style="left:8.53%;top:6.564%;width:2.862%;height:4.718%;" data-idx="27" data-title="28 — B2 – Prestij Koridoru"></button>
-<button class="hotspot" style="left:13.917%;top:6.564%;width:2.862%;height:4.718%;" data-idx="26" data-title="27 — Lider Toplantı Odası 4"></button>
-<button class="hotspot" style="left:19.641%;top:6.564%;width:2.806%;height:4.718%;" data-idx="25" data-title="26 — Lider Toplantı Odası 26"></button>
-<button class="hotspot" style="left:25.253%;top:6.564%;width:2.862%;height:4.718%;" data-idx="24" data-title="25 — B2C – Toplantı Salonları"></button>
-<button class="hotspot" style="left:30.864%;top:6.564%;width:2.806%;height:4.718%;" data-idx="23" data-title="24 — Genel Kurul Salonu 2"></button>
-<button class="hotspot" style="left:37.037%;top:6.564%;width:2.806%;height:4.718%;" data-idx="22" data-title="23 — Genel Kurul Salonu 1"></button>
-<button class="hotspot" style="left:42.256%;top:6.564%;width:2.862%;height:4.718%;" data-idx="21" data-title="22 — B2B – Genel Kurul Salonları"></button>
-<button class="hotspot" style="left:47.868%;top:6.564%;width:3.255%;height:4.718%;" data-idx="20" data-title="21 — Ev Sahibi Ülke Medya Ekibi Ofisi"></button>
-<button class="hotspot" style="left:53.928%;top:6.564%;width:2.862%;height:4.718%;" data-idx="19" data-title="20 — Basın Odaları"></button>
-<button class="hotspot" style="left:58.923%;top:6.564%;width:2.862%;height:4.718%;" data-idx="18" data-title="19 — C16–C27 Ofisleri"></button>
-<button class="hotspot" style="left:64.815%;top:6.564%;width:2.862%;height:4.718%;" data-idx="17" data-title="18 — Ev Sahibi Yayıncı Medya Prodüksiyonu"></button>
-<button class="hotspot" style="left:70.875%;top:6.564%;width:2.862%;height:4.718%;" data-idx="16" data-title="17 — BM Genel Sekreteri Medya Ekibi Ofisi"></button>
-<button class="hotspot" style="left:77.385%;top:6.564%;width:2.862%;height:4.718%;" data-idx="15" data-title="16 — Uluslararası Yayın Merkezi Yöneticisi Ofisi"></button>
-<button class="hotspot" style="left:82.941%;top:6.564%;width:2.862%;height:4.718%;" data-idx="14" data-title="15 — Earth Negotiations Bulletin Ofisi"></button>
-<button class="hotspot" style="left:88.608%;top:6.564%;width:2.862%;height:4.718%;" data-idx="13" data-title="14 — B2E – Medya Merkezi"></button>
-<button class="hotspot" style="left:3.591%;top:10.974%;width:3.086%;height:4.718%;" data-idx="28" data-title="29 — B2A – VVIP / Protokol"></button>
-<button class="hotspot" style="left:3.591%;top:21.128%;width:3.03%;height:4.718%;" data-idx="29" data-title="30 — VIP Fuaye Alanı"></button>
-<button class="hotspot" style="left:3.591%;top:31.385%;width:3.03%;height:4.615%;" data-idx="30" data-title="31 — VIP Fuaye Alanı (devam)"></button>
-<button class="hotspot" style="left:3.591%;top:41.436%;width:3.03%;height:4.513%;" data-idx="31" data-title="32 — BM Protokol Ofisi"></button>
-<button class="hotspot" style="left:3.591%;top:52.103%;width:3.03%;height:4.718%;" data-idx="32" data-title="33 — COP Protokol Ofisi"></button>
-<button class="hotspot" style="left:3.591%;top:62.359%;width:3.03%;height:4.513%;" data-idx="33" data-title="34 — Yönetici Odası"></button>
-<button class="hotspot" style="left:3.591%;top:72.615%;width:3.03%;height:4.513%;" data-idx="34" data-title="35 — BM Güvenlik Bilgilendirme Odası"></button>
-<button class="hotspot" style="left:3.591%;top:82.872%;width:3.086%;height:4.513%;" data-idx="35" data-title="36 — İbadet Odası"></button>
-<button class="hotspot" style="left:3.591%;top:92.718%;width:3.086%;height:4.718%;" data-idx="36" data-title="37 — Blue Zone Mimari Yerleşim Planı"></button>
-<button class="hotspot" style="left:91.807%;top:11.692%;width:3.143%;height:4.615%;" data-idx="12" data-title="13 — Avustralya COP31 Başkanı Toplantı Odası"></button>
-<button class="hotspot" style="left:91.807%;top:18.462%;width:3.143%;height:4.513%;" data-idx="11" data-title="12 — Avustralya COP31 Başkanı Sessiz Oda"></button>
-<button class="hotspot" style="left:91.807%;top:24.718%;width:3.143%;height:4.615%;" data-idx="10" data-title="11 — Avustralya COP31 Başkanı Ofisi"></button>
-<button class="hotspot" style="left:91.807%;top:31.487%;width:3.199%;height:4.615%;" data-idx="9" data-title="10 — BMİDÇS İcra Sekreteri Ofisi"></button>
-<button class="hotspot" style="left:91.807%;top:38.564%;width:3.199%;height:4.513%;" data-idx="8" data-title="09 — BMİDÇS İcra Sekreteri Toplantı Odası"></button>
-<button class="hotspot" style="left:91.807%;top:44.821%;width:3.199%;height:4.615%;" data-idx="7" data-title="08 — Başkan Yardımcısı Dinlenme Odası"></button>
-<button class="hotspot" style="left:91.807%;top:51.897%;width:3.199%;height:4.615%;" data-idx="6" data-title="07 — Başkan Yardımcısı Ofisi"></button>
-<button class="hotspot" style="left:91.807%;top:58.974%;width:3.199%;height:4.513%;" data-idx="5" data-title="06 — Türkiye COP31 Başkanı Dinlenme Alanı"></button>
-<button class="hotspot" style="left:91.807%;top:65.949%;width:3.199%;height:4.615%;" data-idx="4" data-title="05 — Türkiye COP31 Başkanı Toplantı Odası"></button>
-<button class="hotspot" style="left:91.807%;top:73.026%;width:3.199%;height:4.513%;" data-idx="3" data-title="04 — Türkiye COP31 Başkanı Ofisi"></button>
-<button class="hotspot" style="left:91.807%;top:80.0%;width:3.199%;height:4.615%;" data-idx="2" data-title="03 — B3A Mezzanine – UNFCCC & COP Ofisleri"></button>
-<button class="hotspot" style="left:91.807%;top:87.077%;width:3.199%;height:4.615%;" data-idx="1" data-title="02 — B3A Zemin Kat – UNFCCC & COP Ofisleri"></button>
-<button class="hotspot" style="left:91.807%;top:94.154%;width:3.199%;height:4.513%;" data-idx="0" data-title="01 — B4 & B6 – Restoran Alanları"></button>
-        <div class="home-tooltip" id="homeTooltip"></div>
+        <button class="hotspot" data-edge="left" style="left:8.53%;top:6.564%;width:2.862%;height:4.718%;" data-idx="27"><span class="hotspot-label">28 — B2 – Prestij Koridoru</span></button>
+<button class="hotspot" data-edge="top" style="left:13.917%;top:6.564%;width:2.862%;height:4.718%;" data-idx="26"><span class="hotspot-label">27 — Lider Toplantı Odası 4</span></button>
+<button class="hotspot" data-edge="top" style="left:19.641%;top:6.564%;width:2.806%;height:4.718%;" data-idx="25"><span class="hotspot-label">26 — Lider Toplantı Odası 26</span></button>
+<button class="hotspot" data-edge="top" style="left:25.253%;top:6.564%;width:2.862%;height:4.718%;" data-idx="24"><span class="hotspot-label">25 — B2C – Toplantı Salonları</span></button>
+<button class="hotspot" data-edge="top" style="left:30.864%;top:6.564%;width:2.806%;height:4.718%;" data-idx="23"><span class="hotspot-label">24 — Genel Kurul Salonu 2</span></button>
+<button class="hotspot" data-edge="top" style="left:37.037%;top:6.564%;width:2.806%;height:4.718%;" data-idx="22"><span class="hotspot-label">23 — Genel Kurul Salonu 1</span></button>
+<button class="hotspot" data-edge="top" style="left:42.256%;top:6.564%;width:2.862%;height:4.718%;" data-idx="21"><span class="hotspot-label">22 — B2B – Genel Kurul Salonları</span></button>
+<button class="hotspot" data-edge="top" style="left:47.868%;top:6.564%;width:3.255%;height:4.718%;" data-idx="20"><span class="hotspot-label">21 — Ev Sahibi Ülke Medya Ekibi Ofisi</span></button>
+<button class="hotspot" data-edge="top" style="left:53.928%;top:6.564%;width:2.862%;height:4.718%;" data-idx="19"><span class="hotspot-label">20 — Basın Odaları</span></button>
+<button class="hotspot" data-edge="top" style="left:58.923%;top:6.564%;width:2.862%;height:4.718%;" data-idx="18"><span class="hotspot-label">19 — C16–C27 Ofisleri</span></button>
+<button class="hotspot" data-edge="top" style="left:64.815%;top:6.564%;width:2.862%;height:4.718%;" data-idx="17"><span class="hotspot-label">18 — Ev Sahibi Yayıncı Medya Prodüksiyonu</span></button>
+<button class="hotspot" data-edge="top" style="left:70.875%;top:6.564%;width:2.862%;height:4.718%;" data-idx="16"><span class="hotspot-label">17 — BM Genel Sekreteri Medya Ekibi Ofisi</span></button>
+<button class="hotspot" data-edge="top" style="left:77.385%;top:6.564%;width:2.862%;height:4.718%;" data-idx="15"><span class="hotspot-label">16 — Uluslararası Yayın Merkezi Yöneticisi Ofisi</span></button>
+<button class="hotspot" data-edge="top" style="left:82.941%;top:6.564%;width:2.862%;height:4.718%;" data-idx="14"><span class="hotspot-label">15 — Earth Negotiations Bulletin Ofisi</span></button>
+<button class="hotspot" data-edge="right" style="left:88.608%;top:6.564%;width:2.862%;height:4.718%;" data-idx="13"><span class="hotspot-label">14 — B2E – Medya Merkezi</span></button>
+<button class="hotspot" data-edge="left" style="left:3.591%;top:10.974%;width:3.086%;height:4.718%;" data-idx="28"><span class="hotspot-label">29 — B2A – VVIP / Protokol</span></button>
+<button class="hotspot" data-edge="left" style="left:3.591%;top:21.128%;width:3.03%;height:4.718%;" data-idx="29"><span class="hotspot-label">30 — VIP Fuaye Alanı</span></button>
+<button class="hotspot" data-edge="left" style="left:3.591%;top:31.385%;width:3.03%;height:4.615%;" data-idx="30"><span class="hotspot-label">31 — VIP Fuaye Alanı (devam)</span></button>
+<button class="hotspot" data-edge="left" style="left:3.591%;top:41.436%;width:3.03%;height:4.513%;" data-idx="31"><span class="hotspot-label">32 — BM Protokol Ofisi</span></button>
+<button class="hotspot" data-edge="left" style="left:3.591%;top:52.103%;width:3.03%;height:4.718%;" data-idx="32"><span class="hotspot-label">33 — COP Protokol Ofisi</span></button>
+<button class="hotspot" data-edge="left" style="left:3.591%;top:62.359%;width:3.03%;height:4.513%;" data-idx="33"><span class="hotspot-label">34 — Yönetici Odası</span></button>
+<button class="hotspot" data-edge="left" style="left:3.591%;top:72.615%;width:3.03%;height:4.513%;" data-idx="34"><span class="hotspot-label">35 — BM Güvenlik Bilgilendirme Odası</span></button>
+<button class="hotspot" data-edge="left" style="left:3.591%;top:82.872%;width:3.086%;height:4.513%;" data-idx="35"><span class="hotspot-label">36 — İbadet Odası</span></button>
+<button class="hotspot" data-edge="left" style="left:3.591%;top:92.718%;width:3.086%;height:4.718%;" data-idx="36"><span class="hotspot-label">37 — Blue Zone Mimari Yerleşim Planı</span></button>
+<button class="hotspot" data-edge="right" style="left:91.807%;top:11.692%;width:3.143%;height:4.615%;" data-idx="12"><span class="hotspot-label">13 — Avustralya COP31 Başkanı Toplantı Odası</span></button>
+<button class="hotspot" data-edge="right" style="left:91.807%;top:18.462%;width:3.143%;height:4.513%;" data-idx="11"><span class="hotspot-label">12 — Avustralya COP31 Başkanı Sessiz Oda</span></button>
+<button class="hotspot" data-edge="right" style="left:91.807%;top:24.718%;width:3.143%;height:4.615%;" data-idx="10"><span class="hotspot-label">11 — Avustralya COP31 Başkanı Ofisi</span></button>
+<button class="hotspot" data-edge="right" style="left:91.807%;top:31.487%;width:3.199%;height:4.615%;" data-idx="9"><span class="hotspot-label">10 — BMİDÇS İcra Sekreteri Ofisi</span></button>
+<button class="hotspot" data-edge="right" style="left:91.807%;top:38.564%;width:3.199%;height:4.513%;" data-idx="8"><span class="hotspot-label">09 — BMİDÇS İcra Sekreteri Toplantı Odası</span></button>
+<button class="hotspot" data-edge="right" style="left:91.807%;top:44.821%;width:3.199%;height:4.615%;" data-idx="7"><span class="hotspot-label">08 — Başkan Yardımcısı Dinlenme Odası</span></button>
+<button class="hotspot" data-edge="right" style="left:91.807%;top:51.897%;width:3.199%;height:4.615%;" data-idx="6"><span class="hotspot-label">07 — Başkan Yardımcısı Ofisi</span></button>
+<button class="hotspot" data-edge="right" style="left:91.807%;top:58.974%;width:3.199%;height:4.513%;" data-idx="5"><span class="hotspot-label">06 — Türkiye COP31 Başkanı Dinlenme Alanı</span></button>
+<button class="hotspot" data-edge="right" style="left:91.807%;top:65.949%;width:3.199%;height:4.615%;" data-idx="4"><span class="hotspot-label">05 — Türkiye COP31 Başkanı Toplantı Odası</span></button>
+<button class="hotspot" data-edge="right" style="left:91.807%;top:73.026%;width:3.199%;height:4.513%;" data-idx="3"><span class="hotspot-label">04 — Türkiye COP31 Başkanı Ofisi</span></button>
+<button class="hotspot" data-edge="right" style="left:91.807%;top:80.0%;width:3.199%;height:4.615%;" data-idx="2"><span class="hotspot-label">03 — B3A Mezzanine – UNFCCC & COP Ofisleri</span></button>
+<button class="hotspot" data-edge="right" style="left:91.807%;top:87.077%;width:3.199%;height:4.615%;" data-idx="1"><span class="hotspot-label">02 — B3A Zemin Kat – UNFCCC & COP Ofisleri</span></button>
+<button class="hotspot" data-edge="right" style="left:91.807%;top:94.154%;width:3.199%;height:4.513%;" data-idx="0"><span class="hotspot-label">01 — B4 & B6 – Restoran Alanları</span></button>
       </div>
       <div class="legend">
         <span class="item"><span class="swatch" style="background:#e8823a;"></span>B2A / B2C / ENNE</span>
@@ -359,7 +392,6 @@ const ZONE_LABELS = {"B4 / B6": "B4 / B6 — Restoran Alanları", "B3A": "B3A �
 
 let pdfDoc = null;
 let current = 0;
-const pageCache = new Map(); // pageNum -> rendered ImageBitmap (at last used scale)
 
 const stage = document.getElementById('stage');
 const mainCanvas = document.getElementById('mainCanvas');
@@ -380,7 +412,6 @@ async function loadPdf(){
   pdfDoc = await loadingTask.promise;
 }
 
-// Render a PDF page into a target canvas element, fitted to a max CSS size, sharp at devicePixelRatio.
 async function renderPageInto(pageNum, canvasEl, maxCssWidth, maxCssHeight){
   const page = await pdfDoc.getPage(pageNum);
   const base = page.getViewport({ scale: 1 });
@@ -472,16 +503,18 @@ document.getElementById('lightbox').addEventListener('click', (e)=>{
   if(e.target.id === 'lightbox') document.getElementById('lightbox').classList.remove('show');
 });
 
-const tooltip = document.getElementById('homeTooltip');
+// Hotspots: glow + label are pure CSS on hover/focus. For touch devices,
+// tapping lights it up briefly (so the name is visible) before navigating.
 document.querySelectorAll('.hotspot').forEach(h=>{
-  h.addEventListener('click', ()=> showStop(parseInt(h.dataset.idx)));
-  h.addEventListener('mouseenter', ()=>{ tooltip.textContent = h.dataset.title; tooltip.classList.add('show'); });
-  h.addEventListener('mousemove', (e)=>{
-    const rect = directoryWrap.getBoundingClientRect();
-    tooltip.style.left = (e.clientX - rect.left + 14) + 'px';
-    tooltip.style.top = (e.clientY - rect.top + 14) + 'px';
+  h.addEventListener('click', (e)=>{
+    if (!h.classList.contains('lit') && matchMedia('(hover: none)').matches){
+      e.preventDefault();
+      document.querySelectorAll('.hotspot.lit').forEach(x=>x.classList.remove('lit'));
+      h.classList.add('lit');
+      return;
+    }
+    showStop(parseInt(h.dataset.idx));
   });
-  h.addEventListener('mouseleave', ()=> tooltip.classList.remove('show'));
 });
 
 document.addEventListener('keydown', (e)=>{
